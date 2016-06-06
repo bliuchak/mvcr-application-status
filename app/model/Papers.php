@@ -9,28 +9,27 @@ class Papers extends Nette\Object {
 	const FILE_PATH = '/tmp';
 	const FILE_NAME = 'docchecker.xls';
 	const SHEETNAME = 'Zaměstnanecká karta';
+	const INPUT_FILE_NAME = self::FILE_PATH.'/'.self::FILE_NAME;
 
 	public function check($paperNumber) {
 		$this->_getLatestFile();
-		$inputFileType = 'Excel5';
-		$inputFileName = self::FILE_PATH.'/'.self::FILE_NAME;
-		$objReader = \PHPExcel_IOFactory::createReader($inputFileType);
+		$objReader = \PHPExcel_IOFactory::createReader('Excel5');
 		$objReader->setLoadSheetsOnly(self::SHEETNAME);
-		$objPHPExcel = $objReader->load($inputFileName);
-
-		$data = [];
+		$objPHPExcel = $objReader->load(self::INPUT_FILE_NAME);
+		$data = ['date', 'numbers' => []];
 		foreach ($objPHPExcel->getWorksheetIterator() as $worksheet) {
+			$data['date'] = $worksheet->getCell('B5')->getValue() ? $worksheet->getCell('B5')->getValue() : 'No data';
 			foreach ($worksheet->getRowIterator() as $row) {
 				$cellIterator = $row->getCellIterator();
 				foreach ($cellIterator as $cell) {
 					if (preg_match('/'.$paperNumber.'/', $cell->getValue())) {
 						preg_match('/[A-Z-0-9\/]+/', $cell->getValue(), $matches);
-						$data[] = $matches[0];
+						$data['numbers'][] = $matches[0];
 					}
 				}
 			}
 		}
-		return implode(', ', $data);
+		return $data;
 	}
 
 	protected function _getLatestFile() {

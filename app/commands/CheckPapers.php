@@ -22,13 +22,16 @@ class CheckPapers extends Command {
 		$papersModel = $this->getHelper('container')->getByType('App\Model\Papers');
 		$paperNumber = $input->getArgument('paperNumber');
 		try {
-			if ($paperNumber && $papersModel->check($paperNumber)) {
-				$output->writeLn('Possible matches: '.$papersModel->check($paperNumber));
-			} else {
-				$output->writeLn('Empty result');
+			$check = $papersModel->check($paperNumber);
+			if ($paperNumber && $check) {
+				$output->writeLn('Date range: '.$check['date']);
+				if (count($check['numbers'])) {
+					$output->writeLn('Possible matches: '.implode(', ', $check['numbers']));
+				} else {
+					$output->writeLn('Empty result');
+				}
 			}
 			return 0; // zero return code means everything is ok
-
 		} catch (\Nette\Mail\SmtpException $e) {
 			$output->writeLn('<error>' . $e->getMessage() . '</error>');
 			return 1; // non-zero return code means error
