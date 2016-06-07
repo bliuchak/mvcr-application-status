@@ -8,23 +8,45 @@ class Papers extends Nette\Object {
 	const DOCUMENT_LINK = 'http://www.mvcr.cz/soubor/prehled-k-23-5-2016.aspx';
 	const FILE_PATH = '/tmp';
 	const FILE_NAME = 'docchecker.xls';
-	const SHEETNAME = 'Zaměstnanecká karta';
 	const INPUT_FILE_NAME = self::FILE_PATH.'/'.self::FILE_NAME;
 
-	public function check($paperNumber) {
-		$this->_getLatestFile();
+	const ALL_SHEET = 'all';
+	const ALL_YEARS = 'all';
+	const LONGTERM_SHEET = 'DP, PP, DV - prodl.';
+	const EMPLOYEECARD_SHEET = 'Zaměstnanecká karta';
+	const PERMANENT_SHEET = 'Trvalé pobyty';
+
+	const LONGTERM_OPT = 'lt';
+	const EMPLOYEECARD_OPT = 'ec';
+	const PERMANENT_OPT = 'pt';
+
+	public function check($paperNumber, $rawSheetname, $year) {
+		$this->_getLatestXlsFileFromMvcr();
 		$objReader = \PHPExcel_IOFactory::createReader('Excel5');
-		$objReader->setLoadSheetsOnly(self::SHEETNAME);
+		// handle specific sheetname
+		if ($rawSheetname != self::ALL_SHEET) {
+			$sheetname = $this->_getOriginalSheetname($rawSheetname);
+			$objReader->setLoadSheetsOnly($sheetname);
+		}
 		$objPHPExcel = $objReader->load(self::INPUT_FILE_NAME);
 		$data = ['date', 'numbers' => []];
+		// make search in all or specefic sheet by checking each cell value
 		foreach ($objPHPExcel->getWorksheetIterator() as $worksheet) {
-			$data['date'] = $worksheet->getCell('B5')->getValue() ? $worksheet->getCell('B5')->getValue() : 'No data';
+			$data['date'] = $worksheet->getCell('B5')->getValue() 
+					? $worksheet->getCell('B5')->getValue() 
+					: 'No data';
 			foreach ($worksheet->getRowIterator() as $row) {
 				$cellIterator = $row->getCellIterator();
 				foreach ($cellIterator as $cell) {
-					if (preg_match('/'.$paperNumber.'/', $cell->getValue())) {
-						preg_match('/[A-Z-0-9\/]+/', $cell->getValue(), $matches);
-						$data['numbers'][] = $matches[0];
+					if (!is_null($cell->getValue())) {
+						$condition = '/(?=.*OAM-'.$paperNumber.')/';
+						if ($year != self::ALL_YEARS) {
+							$condition = '/(?=.*OAM-'.$paperNumber.')(?=.*-'.$year.')/';
+						}
+						if (preg_match($condition, $cell->getValue(), $test)) {
+							preg_match('/[A-Z-0-9\/]+/', $cell->getValue(), $matches);
+							$data['numbers'][$worksheet->getTitle()][] = $matches[0];
+						}
 					}
 				}
 			}
@@ -32,7 +54,20 @@ class Papers extends Nette\Object {
 		return $data;
 	}
 
-	protected function _getLatestFile() {
+	protected function _getOriginalSheetname($rawSheetname) {
+		switch ($rawSheetname) {
+			case self::LONGTERM_OPT:
+				return self::LONGTERM_SHEET;
+			case self::EMPLOYEECARD_OPT:
+				return self::EMPLOYEECARD_SHEET;
+			case self::PERMANENT_OPT:
+				return self::PERMANENT_SHEET;
+			default:
+				return self::ALL_SHEET;
+		}
+	}
+
+	protected function _getLatestXlsFileFromMvcr() {
 		if ($this->_getCurrentFileSize() != $this->_getRemoteFileSize()) {
 			return file_put_contents(self::FILE_PATH.'/'.self::FILE_NAME, fopen(self::DOCUMENT_LINK, 'r'));
 		}
