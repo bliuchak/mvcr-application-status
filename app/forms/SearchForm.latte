@@ -1,0 +1,14 @@
+{form searchForm}
+	<ul class="error" n:if="$form->errors">
+		<li n:foreach="$form->errors as $error">{$error}</li>
+	</ul>
+	<div class="row">
+		<div class="col-lg-6">
+			<div class="form-group">
+				{label number /}
+				{input number, class => "form-control"}
+			</div>
+		</div>
+	</div>
+{input save, class => "btn btn-primary form-control"}
+{/form}

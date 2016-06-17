@@ -22,6 +22,7 @@ session:
 services:
 	- App\Model\Papers
 	router: App\RouterFactory::createRouter
+	- Form\ISearchFormFactory
 
 extensions:
 	console: Kdyby\Console\DI\ConsoleExtension

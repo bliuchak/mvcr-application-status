@@ -20,7 +20,7 @@ class Papers extends Nette\Object {
 	const EMPLOYEECARD_OPT = 'ec';
 	const PERMANENT_OPT = 'pt';
 
-	public function check($paperNumber, $rawSheetname, $year) {
+	public function check($paperNumber, $rawSheetname = self::ALL_SHEET, $year = self::ALL_YEARS) {
 		$this->_getLatestXlsFileFromMvcr();
 		$objReader = \PHPExcel_IOFactory::createReader('Excel5');
 		// handle specific sheetname
