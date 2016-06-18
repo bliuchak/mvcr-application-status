@@ -12,7 +12,7 @@ class HomepagePresenter extends BasePresenter {
 	public $searchFormFactory;
 
 	public function renderDefault() {
-		$searchValue = null;
+		$this->template->results = $searchValue = null;
 		if (isset($this['searchForm']->components['searchForm'])) {
 			$papersModel = new \App\Model\Papers();
 			$searchValue = $this['searchForm']->components['searchForm']->httpData['number'];
