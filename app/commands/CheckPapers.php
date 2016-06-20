@@ -18,28 +18,26 @@ class CheckPapers extends Command {
 							'Paper number'
 						)
 					->addOption(
-							'section',
+							'type',
 							null,
 							InputOption::VALUE_OPTIONAL,
-							'Define section for paper number (long term, employee card, permanent residence or all)',
-							'all'
+							'Define type for paper number (long term, employee card, permanent residence or all)'
 					)
 					->addOption(
 							'year',
 							null,
 							InputOption::VALUE_OPTIONAL,
-							'Year when application was issues',
-							'all'
+							'Year when application was issues'
 					);
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output) {
 		$papersModel = $this->getHelper('container')->getByType('App\Model\Papers');
 		$paperNumber = $input->getArgument('paperNumber');
-		$sheetname = $input->getOption('section');
+		$type = $input->getOption('type');
 		$year = $input->getOption('year');
 		try {
-			$check = $papersModel->getByNumber($paperNumber, $sheetname, $year);
+			$check = $papersModel->getByNumber($paperNumber, $type, $year);
 			$output->writeLn('<bg=cyan>Results:</>');
 			if (count($check)) {
 				foreach ($check as $data) {
