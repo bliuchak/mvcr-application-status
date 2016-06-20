@@ -20,37 +20,99 @@ class Papers extends Nette\Object {
 	const EMPLOYEECARD_OPT = 'ec';
 	const PERMANENT_OPT = 'pt';
 
-	public function check($paperNumber, $rawSheetname = self::ALL_SHEET, $year = self::ALL_YEARS) {
+	/** @var Nette\Database\Context */
+	private $database;
+
+	public function __construct(Nette\Database\Context $database) {
+		$this->database = $database;
+	}
+
+	public function getByNumber($number, $sheetname = null, $year = null) {
+		$data = $this->database->table('papers')
+			->select('*')
+			->where('papers.number', $number)
+			->where('papers.deleted IS NULL');
+		return $data->fetchAll();
+	}
+
+	public function updateDatabase() {
+		// mark all prev data as outdated
+		$this->database->query('UPDATE papers SET deleted=?', time());
 		$this->_getLatestXlsFileFromMvcr();
 		$objReader = \PHPExcel_IOFactory::createReader('Excel5');
-		// handle specific sheetname
-		if ($rawSheetname != self::ALL_SHEET) {
-			$sheetname = $this->_getOriginalSheetname($rawSheetname);
-			$objReader->setLoadSheetsOnly($sheetname);
-		}
 		$objPHPExcel = $objReader->load(self::INPUT_FILE_NAME);
-		$data = ['date', 'numbers' => []];
-		// make search in all or specefic sheet by checking each cell value
+		$data = [];
 		foreach ($objPHPExcel->getWorksheetIterator() as $worksheet) {
-			$data['date'] = $worksheet->getCell('B5')->getValue() 
-					? $worksheet->getCell('B5')->getValue() 
-					: 'No data';
 			foreach ($worksheet->getRowIterator() as $row) {
 				$cellIterator = $row->getCellIterator();
 				foreach ($cellIterator as $cell) {
 					if (!is_null($cell->getValue())) {
-						$condition = '/(?=.*OAM-'.$paperNumber.')/';
-						if ($year != self::ALL_YEARS) {
-							$condition = '/(?=.*OAM-'.$paperNumber.')(?=.*-'.$year.')/';
-						}
-						if (preg_match($condition, $cell->getValue(), $test)) {
+						$condition = '/(?=.*OAM-)/';
+						if (preg_match($condition, $cell->getValue())) {
 							preg_match('/[A-Z-0-9\/]+/', $cell->getValue(), $matches);
-							$data['numbers'][$worksheet->getTitle()][] = $matches[0];
+							$number = $this->_getNumberDetailsByRawNumber($matches[0]);
+							$data[] = [
+								'rawNumber' => $number['rawNumber'],
+								'number' => $number['number'],
+								'type' => $number['type'],
+								'year' => $number['year'],
+								'created' => time()
+							];
 						}
 					}
 				}
 			}
 		}
+		if (count($data)) {
+			$this->database->table('papers')->insert($data);
+		}
+		return $data;
+	}
+
+	// public function check($paperNumber, $rawSheetname = self::ALL_SHEET, $year = self::ALL_YEARS) {
+	// 	$this->_getLatestXlsFileFromMvcr();
+	// 	$objReader = \PHPExcel_IOFactory::createReader('Excel5');
+	// 	// handle specific sheetname
+	// 	if ($rawSheetname != self::ALL_SHEET) {
+	// 		$sheetname = $this->_getOriginalSheetname($rawSheetname);
+	// 		$objReader->setLoadSheetsOnly($sheetname);
+	// 	}
+	// 	$objPHPExcel = $objReader->load(self::INPUT_FILE_NAME);
+	// 	$data = ['date', 'numbers' => []];
+	// 	// make search in all or specefic sheet by checking each cell value
+	// 	foreach ($objPHPExcel->getWorksheetIterator() as $worksheet) {
+	// 		$data['date'] = $worksheet->getCell('B5')->getValue() 
+	// 				? $worksheet->getCell('B5')->getValue() 
+	// 				: 'No data';
+	// 		foreach ($worksheet->getRowIterator() as $row) {
+	// 			$cellIterator = $row->getCellIterator();
+	// 			foreach ($cellIterator as $cell) {
+	// 				if (!is_null($cell->getValue())) {
+	// 					$condition = '/(?=.*OAM-'.$paperNumber.')/';
+	// 					if ($year != self::ALL_YEARS) {
+	// 						$condition = '/(?=.*OAM-'.$paperNumber.')(?=.*-'.$year.')/';
+	// 					}
+	// 					if (preg_match($condition, $cell->getValue())) {
+	// 						preg_match('/[A-Z-0-9\/]+/', $cell->getValue(), $matches);
+	// 						$data['numbers'][$worksheet->getTitle()][] = $matches[0];
+	// 					}
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// 	return $data;
+	// }
+
+	protected function _getNumberDetailsByRawNumber($rawNumber) {
+		$dividedNumber = explode('/', $rawNumber);
+		$number = explode('-', $dividedNumber[0]);
+		$typeYear = explode('-', $dividedNumber[1]);
+		$data = [
+			'rawNumber' => $rawNumber,
+			'number' => $number[1],
+			'type' => $typeYear[0],
+			'year' => $typeYear[1]
+		];
 		return $data;
 	}
 

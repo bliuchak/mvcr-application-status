@@ -32,7 +32,8 @@
 		"latte/latte": "~2.3.0",
 		"tracy/tracy": "~2.3.0",
 		"kdyby/console": "^2.6",
-		"phpoffice/phpexcel": "^1.8"
+		"phpoffice/phpexcel": "^1.8",
+		"robmorgan/phinx": "^0.5.4"
 	},
 	"require-dev": {
 		"nette/tester": "~1.3"

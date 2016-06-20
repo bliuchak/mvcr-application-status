@@ -3,7 +3,7 @@
 namespace App\Presenters;
 
 use Nette;
-use App\Model;
+use App\Model\Papers;
 use Form;
 
 class HomepagePresenter extends BasePresenter {
@@ -11,18 +11,27 @@ class HomepagePresenter extends BasePresenter {
 	/** @var Form\ISearchFormFactory @inject */
 	public $searchFormFactory;
 
+	/** @var Nette\Database\Context */
+	private $database;
+
+	/** @var papersModel */
+	private $papersModel;
+
+	public function __construct(Nette\Database\Context $database, Papers $papersModel) {
+		$this->database = $database;
+		$this->papersModel = $papersModel;
+	}
+
 	public function renderDefault() {
 		$this->template->results = $searchValue = null;
 		if (isset($this['searchForm']->components['searchForm'])) {
-			$papersModel = new \App\Model\Papers();
 			$searchValue = $this['searchForm']->components['searchForm']->httpData['number'];
-			$this->template->results = $papersModel->check($searchValue);
+			$this->template->results = $this->papersModel->getByNumber($searchValue);
 		}
 	}
 
 	protected function createComponentSearchForm() {
-		$control = $this->searchFormFactory->create();
-		return $control;
+		return $this->searchFormFactory->create();
 	}
 
 }

@@ -39,18 +39,14 @@ class CheckPapers extends Command {
 		$sheetname = $input->getOption('section');
 		$year = $input->getOption('year');
 		try {
-			$check = $papersModel->check($paperNumber, $sheetname, $year);
-			if ($paperNumber && $check) {
-				$output->writeLn('Decisions issued during: '.$check['date']);
-				$output->writeLn('Year: '.$year);
-				if (count($check['numbers'])) {
-					foreach ($check['numbers'] as $section => $data) {
-						$output->writeLn($section.': '.implode(', ', $check['numbers'][$section]));
-					}
-				} else {
-					$output->writeLn('Empty result');
+			$check = $papersModel->getByNumber($paperNumber, $sheetname, $year);
+			$output->writeLn('<bg=cyan>Results:</>');
+			if (count($check)) {
+				foreach ($check as $data) {
+					$output->writeLn($data->rawNumber);
 				}
 			}
+			$output->writeLn('<bg=red>End</>');
 			return 0; // zero return code means everything is ok
 		} catch (\Nette\Mail\SmtpException $e) {
 			$output->writeLn('<error>' . $e->getMessage() . '</error>');

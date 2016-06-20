@@ -1,20 +1,13 @@
 {control searchForm}
 
-{if count($results)}
-	<p>Date range: {$results['date']}</p>
-	<p>
-		<strong>Results:</strong><br/>
-		{if (count($results['numbers']))}
-			{foreach $results['numbers'] as $section => $numbers}
-				<p>{$section}</p>
-				<ul>
-					{foreach $numbers as $number}
-						<li>{$number}</li>
-					{/foreach}
-				</ul>
-			{/foreach}
-		{else}
-			No result to display
-		{/if}
-	</p>
+<p>Results:</p>
+
+{if $results}
+	<ul>
+		{foreach $results as $row}
+			<li>{$row->rawNumber}</li>
+		{/foreach}
+	</ul>
+{else}
+	<p>No results</p>
 {/if}
