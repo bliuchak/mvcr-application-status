@@ -3,7 +3,14 @@
 # https://nette.org/security-warning
 #
 parameters:
-
+	constants:
+		DP_OPT: DP
+		PP_OPT: PP
+		DV_OPT: DV
+		ZM_OPT: ZM
+		TP_OPT: TP
+		types: {DP: DP, PP: PP, DV: DV, ZM: ZM, TP: TP}
+		years: {2013: 2013, 2014: 2014, 2015: 2015, 2016: 2016}
 
 php:
 	date.timezone: Europe/Prague
@@ -23,6 +30,7 @@ services:
 	- App\Model\Papers
 	router: App\RouterFactory::createRouter
 	- Form\ISearchFormFactory
+	- Lib\Settings(%constants%)
 
 extensions:
 	console: Kdyby\Console\DI\ConsoleExtension

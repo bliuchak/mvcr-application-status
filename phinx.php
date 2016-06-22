@@ -39,8 +39,8 @@ if (file_exists($configFile = __DIR__ . '/app/config/config.local.neon')) {
 }
 
 $decoded = $neon->decode($file);
-
-$database = isset($decoded['database']) ? $decoded['database'] : ['user' => '', 'password' => '', 'dsn' => 'mysql:host=localhost;dbname=database'];
+var_dump($decoded);
+$database = isset($decoded['database']['default']) ? $decoded['database']['default'] : ['user' => '', 'password' => '', 'dsn' => 'mysql:host=localhost;dbname=database'];
 
 preg_match(DSN_REGEX, $database['dsn'], $dsn);
 

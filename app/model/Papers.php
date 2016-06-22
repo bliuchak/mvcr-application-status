@@ -10,25 +10,15 @@ class Papers extends Nette\Object {
 	const FILE_NAME = 'docchecker.xls';
 	const INPUT_FILE_NAME = self::FILE_PATH.'/'.self::FILE_NAME;
 
-	const ALL_SHEET = 'all';
-	const ALL_YEARS = 'all';
-	const LONGTERM_SHEET = 'DP, PP, DV - prodl.';
-	const EMPLOYEECARD_SHEET = 'Zaměstnanecká karta';
-	const PERMANENT_SHEET = 'Trvalé pobyty';
+	/** @inject @var \Nette\Database\Context */
+	public $database;
 
-	const DP_OPT = 'DP';
-	const PP_OPT = 'PP';
-	const DV_OPT = 'DV';
-	const ZM_OPT = 'ZM';
-	const TP_OPT = 'TP';
+	/** @inject @var \Lib\Settings */
+	public $settings;
 
-	const TYPES = [self::DP_OPT, self::PP_OPT, self::DV_OPT, self::ZM_OPT, self::TP_OPT];
-
-	/** @var Nette\Database\Context */
-	private $database;
-
-	public function __construct(Nette\Database\Context $database) {
+	public function __construct(\Nette\Database\Context $database, \Lib\Settings $settings) {
 		$this->database = $database;
+		$this->settings = $settings;
 	}
 
 	public function getByNumber($number, $type = null, $year = null) {
@@ -36,10 +26,12 @@ class Papers extends Nette\Object {
 			->select('*')
 			->where('papers.number', $number)
 			->where('papers.deleted IS NULL');
-		if (in_array($type, self::TYPES)) {
+		// type filter
+		if (in_array($type, $this->settings->params['types'])) {
 			$data->where('papers.type', $type);
 		}
-		if (is_int($year) && $year > 2010) {
+		// year filter
+		if (in_array($year, $this->settings->params['years'])) {
 			$data->where('papers.year', $year);
 		}
 		return $data->fetchAll();

@@ -8,14 +8,16 @@ use App\Model;
 
 class SearchForm extends UI\Control {
 
-	public $onSave = [];
-
 	/** @var \Model\Papers */
 	private $papersModel;
 
-	public function __construct(Model\Papers $papers) {
-		parent::__construct();
+	/** @var \Lib\Settings */
+	private $settings;
+
+	public function __construct(Model\Papers $papers, \Lib\Settings $settings) {
+		// parent::__construct();
 		$this->papersModel = $papers;
+		$this->settings = $settings;
 	}
 
 	public function render() {
@@ -27,6 +29,10 @@ class SearchForm extends UI\Control {
 		$form = new UI\Form;
 		$form->addProtection();
 		$form->addText('number', 'Number:')->setRequired('Je zapotřebí vyplnit titulek.');
+		$form->addSelect('type', 'Type', $this->settings->params['types'])
+				->setPrompt('All');
+		$form->addSelect('year', 'Year', $this->settings->params['years'])
+				->setPrompt('All');
 		$form->addSubmit('save', 'Search');
 		$form->onSuccess[] = $this->searchFormSucceeded;
 		return $form;
