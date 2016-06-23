@@ -1,13 +1,38 @@
-{control searchForm}
+{layout "../@layout.latte"}
 
-<p>Results:</p>
+{block head}
+	<link rel="stylesheet" type="text/css" href="/css/semantic.min.css">
+	<link rel="stylesheet" type="text/css" href="/css/style.css">
+	<script src="/js/semantic.min.js"></script>
+{/block}
 
-{if $results}
-	<ul>
-		{foreach $results as $row}
-			<li>{$row->rawNumber}</li>
-		{/foreach}
-	</ul>
-{else}
-	<p>No results</p>
-{/if}
+{block content}
+
+<div class="ui main text container">
+	<h1 class="ui header"><a href="/">MVCR Search</a></h1>
+	<p>Please use the form below to search documents.<br />
+		If you have number <strong>OAM-99999-3/TP-2016</strong> then use <strong>99999</strong> for search.
+	</p>
+	{control searchForm}
+
+	<h1 class="ui header">Results ({count($results)}):</h1>
+
+	{if $results}
+		<ol class="ui list">
+			{foreach $results as $row}
+				<li>{$row->rawNumber}</li>
+			{/foreach}
+		</ol>
+	{else}
+		<p>No results</p>
+	{/if}
+
+	<footer>
+		<div class="ui right floated horizontal list">
+			<div class="disabled item" href="#">© tsg</div>
+		</div>
+	</footer>
+
+</div>
+
+{/block}

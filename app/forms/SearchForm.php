@@ -28,7 +28,7 @@ class SearchForm extends UI\Control {
 	protected function createComponentSearchForm() {
 		$form = new UI\Form;
 		$form->addProtection();
-		$form->addText('number', 'Number:')->setRequired('Je zapotřebí vyplnit titulek.');
+		$form->addText('number', 'Number:')->setRequired('Please set number');
 		$form->addSelect('type', 'Type', $this->settings->params['types'])
 				->setPrompt('All');
 		$form->addSelect('year', 'Year', $this->settings->params['years'])

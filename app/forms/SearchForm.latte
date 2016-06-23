@@ -1,22 +1,20 @@
-{form searchForm}
-	<ul class="error" n:if="$form->errors">
-		<li n:foreach="$form->errors as $error">{$error}</li>
-	</ul>
-	<div class="row">
-		<div class="col-lg-6">
-			<div class="form-group">
-				{label number /}
-				{input number, class => "form-control"}
-			</div>
-			<div class="form-group">
+{form searchForm, class=>'ui form'}
+
+	<div class="fields">
+		<div class="ten wide field required">
+			{label number /}
+			{input number}
+		</div>
+		<div class="three wide field">
 				{label type /}
-				{input type, class => "form-control"}
-			</div>
-			<div class="form-group">
+				{input type}
+		</div>
+		<div class="three wide field">
 				{label year /}
-				{input year, class => "form-control"}
-			</div>
+				{input year}
 		</div>
 	</div>
-{input save, class => "btn btn-primary form-control"}
+
+	{input save, class => "ui button"}
+
 {/form}
