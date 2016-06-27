@@ -6,9 +6,7 @@ use Nette;
 class Papers extends Nette\Object {
 
 	const DOCUMENT_LINK = 'http://www.mvcr.cz/soubor/prehled-k-23-5-2016.aspx';
-	const FILE_PATH = '/tmp';
-	const FILE_NAME = 'docchecker.xls';
-	const INPUT_FILE_NAME = self::FILE_PATH.'/'.self::FILE_NAME;
+	const INPUT_FILE_NAME = '/tmp/docchecker.xls';
 
 	/** @inject @var \Nette\Database\Context */
 	public $database;
@@ -86,14 +84,17 @@ class Papers extends Nette\Object {
 
 	protected function _getLatestXlsFileFromMvcr() {
 		if ($this->_getCurrentFileSize() != $this->_getRemoteFileSize()) {
-			return file_put_contents(self::FILE_PATH.'/'.self::FILE_NAME, fopen(self::DOCUMENT_LINK, 'r'));
+			if (file_exists(self::INPUT_FILE_NAME)) {
+				unlink(self::INPUT_FILE_NAME);
+			}
+			return file_put_contents(self::INPUT_FILE_NAME, fopen(self::DOCUMENT_LINK, 'r'));
 		}
 		return false;
 	}
 
 	protected function _getCurrentFileSize() {
-		if (file_exists(self::FILE_PATH.'/'.self::FILE_NAME)) {
-			return filesize(self::FILE_PATH.'/'.self::FILE_NAME);
+		if (file_exists(self::INPUT_FILE_NAME)) {
+			return filesize(self::INPUT_FILE_NAME);
 		}
 		return 0;
 	}
